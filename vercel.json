@@ -1,0 +1,12 @@
+{
+    "builds": [
+      {
+        "src": "client/frequent-search/package.json",
+        "use": "@vercel/static-build",
+        "config": {
+          "distDir": "client/frequent-search/build"
+        }
+      }
+    ]
+  }
+  
