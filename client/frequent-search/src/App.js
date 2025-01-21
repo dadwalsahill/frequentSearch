@@ -7,6 +7,16 @@ import { validateForm } from "./validations/validations";
 import { useNavigate } from "react-router-dom";
 import customStyles from "./styles/customStyles";
 
+const fetchData = async (url, params = {}) => {
+  try {
+    const response = await axios.get(url, { params });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching data:", error.message);
+    throw error; // Re-throw the error to be caught by the caller
+  }
+};
+
 function App() {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -32,17 +42,12 @@ function App() {
 
   const fetchCountries = async () => {
     try {
-      const response = await axios.get(API_URLS.COUNTRIES);
-
-      if (Array.isArray(response.data)) {
-        const countryOptions = response.data.map((item) => ({
-          value: item?.country || "Unknown",
-          label: item?.country || "Unknown",
-        }));
-        setCountries(countryOptions);
-      } else {
-        console.error("Unexpected API response format. Expected an array.");
-      }
+      const countryData = await fetchData(API_URLS.BASE_URL);
+      const countryOptions = countryData.map((item) => ({
+        value: item?.country || "Unknown",
+        label: item?.country || "Unknown",
+      }));
+      setCountries(countryOptions);
     } catch (error) {
       console.error("Error fetching countries:", error.message);
     }
@@ -50,9 +55,10 @@ function App() {
 
   const fetchStates = async (countryCode) => {
     try {
-      const response = await axios.get(`${API_URLS.GEONAME}/${countryCode}`);
-      console.log("States API Response:", response.data);
-      const stateOptions = response.data.map((state) => ({
+      const stateData = await fetchData(API_URLS.BASE_URL, {
+        country: countryCode,
+      });
+      const stateOptions = stateData.map((state) => ({
         value: state.geonameId,
         label: state.name,
       }));
@@ -69,17 +75,11 @@ function App() {
         console.error("Country and state must be provided.");
         return;
       }
-
-      const response = await axios.get(
-        `${API_URLS.CITIES}/${country}/${state}`
-      );
-      console.log("Cities API Response:", response.data);
-
-      const cityOptions = response.data.map((city) => ({
+      const cityData = await fetchData(API_URLS.BASE_URL, { country, state });
+      const cityOptions = cityData.map((city) => ({
         value: city,
         label: city,
       }));
-
       setCities(cityOptions);
     } catch (error) {
       console.error("Error fetching cities:", error.message);
@@ -149,7 +149,7 @@ function App() {
     const validationErrors = validateForm(formData);
     if (Object.keys(validationErrors).length === 0) {
       try {
-        await axios.post(API_URLS.REGISTER, formData);
+        await axios.post(API_URLS.BASE_URL, formData);
         alert("Form submitted successfully!");
         navigate("/displayData", { state: { formData } });
       } catch (error) {
