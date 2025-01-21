@@ -1,4 +1,5 @@
 {
+    "version": 2,
     "builds": [
       {
         "src": "client/frequent-search/package.json",
@@ -6,6 +7,20 @@
         "config": {
           "distDir": "client/frequent-search/build"
         }
+      },
+      {
+        "src": "server/api/*.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/api/(.*)",
+        "dest": "/server/api/$1.js" 
+      },
+      {
+        "src": "/(.*)",
+        "dest": "client/frequent-search/build/$1" 
       }
     ]
   }

@@ -1,6 +1,10 @@
 export const API_URLS = {
-  COUNTRIES: "https://localhost:5000/countries", // Backend API for countries
-  GEONAME: "https://localhost:5000/states", // Backend API for states
-  CITIES: "https://localhost:5000/cities",
-  REGISTER: "https://localhost:5000/register", // Register API
+  COUNTRIES:
+    "https://frequent-search-server-osfjaze3u-sahils-projects-699a521d.vercel.app/api/countries", // Backend API for countries
+  GEONAME:
+    "https://frequent-search-server-bmu9gl0w7-sahils-projects-699a521d.vercel.app/api/countries", // Backend API for states
+  CITIES:
+    "https://frequent-search-server-bmu9gl0w7-sahils-projects-699a521d.vercel.app/api/countries",
+  REGISTER:
+    "https://frequent-search-server-bmu9gl0w7-sahils-projects-699a521d.vercel.app/api/register", // Register API
 };

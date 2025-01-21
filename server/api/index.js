@@ -2,31 +2,25 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const Location = require("./models/locationSchema");
-const { populateLocationData } = require("./models/data");
+const Location = require("../models/locationSchema");
+const { populateLocationData } = require("../models/data");
 
 const app = express();
-const PORT = 5000;
 
 app.use(bodyParser.json());
 app.use(cors());
 
-// mongoose.connect("mongodb://127.0.0.1:27017/registrationDB", {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
+// MongoDB connection
 mongoose
-  .connect(
-    "mongodb+srv://sahilbuddy3476:WW4nOxiFWNFbGMxF@cluster2.3od6e.mongodb.net/registrationDB?retryWrites=true&w=majority",
-    {}
-  )
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("Connected to MongoDB Atlas"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "Connection error:"));
-db.once("open", async () => {
-  console.log("Connected to MongoDB");
+// Populate location data
+mongoose.connection.once("open", async () => {
   try {
     await populateLocationData();
   } catch (error) {
@@ -34,6 +28,7 @@ db.once("open", async () => {
   }
 });
 
+// Define User Schema
 const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true, match: /^[A-Za-z]+$/ },
   lastName: { type: String, required: true, match: /^[A-Za-z]+$/ },
@@ -52,6 +47,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
+// Routes
 app.get("/countries", async (req, res) => {
   try {
     const countries = await Location.find({}, "country -_id");
@@ -67,9 +63,8 @@ app.get("/states/:country", async (req, res) => {
       { country: req.params.country },
       "states -_id"
     );
-    if (!countryData) {
+    if (!countryData)
       return res.status(404).json({ error: "Country not found" });
-    }
     res.status(200).json(countryData.states);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -82,18 +77,14 @@ app.get("/cities/:country/:state", async (req, res) => {
       { country: req.params.country },
       { "states.name": 1, "states.cities": 1 }
     );
-
-    if (!countryData) {
+    if (!countryData)
       return res.status(404).json({ error: "Country not found" });
-    }
 
     const stateData = countryData.states.find(
       (state) => state.name === req.params.state
     );
 
-    if (!stateData) {
-      return res.status(404).json({ error: "State not found" });
-    }
+    if (!stateData) return res.status(404).json({ error: "State not found" });
 
     res.status(200).json(stateData.cities);
   } catch (error) {
@@ -101,7 +92,6 @@ app.get("/cities/:country/:state", async (req, res) => {
   }
 });
 
-// Register User
 app.post("/register", async (req, res) => {
   const userData = req.body;
 
@@ -123,4 +113,4 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Server running on :${PORT}`));
+module.exports = app;
