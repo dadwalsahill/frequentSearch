@@ -11,27 +11,27 @@ const PORT = 5000;
 app.use(bodyParser.json());
 app.use(cors());
 
-// mongoose.connect("mongodb://127.0.0.1:27017/registrationDB", {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
+const dbUri =
+  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/registrationDB";
+
 mongoose
-  .connect(
-    "mongodb+srv://sahilbuddy3476:WW4nOxiFWNFbGMxF@cluster2.3od6e.mongodb.net/registrationDB?retryWrites=true&w=majority",
-    {}
-  )
-  .then(() => console.log("Connected to MongoDB Atlas"))
+  .connect(dbUri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("Connected to MongoDB"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "Connection error:"));
+
 db.once("open", async () => {
   console.log("Connected to MongoDB");
-  try {
-    await populateLocationData();
-  } catch (error) {
-    console.error("Error populating location data:", error);
-  }
+  // try {
+  //   await populateLocationData();
+  // } catch (error) {
+  //   console.error("Error populating location data:", error);
+  // }
 });
 
 const userSchema = new mongoose.Schema({
